@@ -19,21 +19,24 @@ async fn main() -> Result<(), reqwest::Error> {
         .build()?;
     
     //Eventually: iterate over BZY, BZX, EGX, EGY (last two unsure)
+    let exchange = "bzx";
     let response = client
-        .get("https://www.cboe.com/json/bzx/book/SPY")
-        .header("if-modified-since", "Mo, 27 Mar 2023 12:37:24 GMT")
+        .get(format!("https://www.cboe.com/json/{exchange}/book/SPY"))
+        .header("if-modified-since", "19:18:46 US/Eastern")
         .send()
         .await?;
 
     match response.status() {
         reqwest::StatusCode::NOT_MODIFIED => {
              eprintln!("HTTP 304 Not modified...skipping");
+             //TODO: use ansi_term to add color codes?
         }
 
         reqwest::StatusCode::OK => {
             // add json parsing like the Success in this https://blog.logrocket.com/making-http-requests-rust-reqwest/
             println!("{}", response.text().await?);
             //TODO: eprintln status code, exchange, and timestamp
+            //TODO: capture timestamp from response to use for next call's if-modified-since
         }
 
         other => {
